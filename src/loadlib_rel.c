@@ -61,7 +61,7 @@ static void setprogdir (lua_State *L);
   #include <sys/cygwin.h>
 #endif
 
-#if defined(__linux__) || defined(__sun)
+#if defined(__linux__) || defined(__sun) || defined(EMSCRIPTEN)
   #include <unistd.h> /* readlink */
 #endif
 
@@ -75,6 +75,13 @@ static void setprogdir (lua_State *L);
   #include <sys/sysctl.h>
 #endif
 
+#ifdef EMSCRIPTEN
+static void setprogdir(lua_State *L) {
+  /* we don't have a real path for emscripten binary in fs */
+  luaL_gsub(L, lua_tostring(L, -1), LUA_EXECDIR, "./");
+  lua_remove(L, -2);
+}
+#else
 static void setprogdir(lua_State *L) {
   char progdir[_PATH_MAX + 1];
   char *lb;
@@ -139,6 +146,7 @@ static void setprogdir(lua_State *L) {
     lua_remove(L, -2);
   }
 }
+#endif
 
 /* }====================================================== */
 
